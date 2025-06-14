@@ -27,6 +27,11 @@ pip install -r requirements.txt
 ollama pull gemma3:4b
 ```
 
+Models that also work (technically; quality wasn't measured yet)
+* [gemma3:4b](https://ollama.com/library/gemma3:4b) 
+* [gemma3:12b](https://ollama.com/library/gemma3:12b) 
+* [qwen2.5vl:7b](https://ollama.com/library/qwen2.5vl:7b)
+
 ## Usage
 
 1. In your Jupyter notebook, import the extension:

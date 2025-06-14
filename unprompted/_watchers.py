@@ -96,7 +96,7 @@ class VarWatcher(object):
 
     def debug_print(self, *args, **kwargs):
         from unprompted import verbose
-        if verbose:
+        if not verbose:
             return
 
         if self.stdout_capturer:
@@ -130,7 +130,7 @@ class VarWatcher(object):
         if self._raw_cell is None:
             # first execution
             display(HTML(f"""<small>👋 Hi, I'm unprompted {__version__}. 
-                         In the following code cells I will interpret your code, read the outputs of executions, provide feedback and suggest improvements. 
+                         In the following code cells I will interpret your code, read its output, provide feedback and suggest improvements. 
                          If you want me to shut up, just comment out <code>import unprompted</code> and rerun the notebook.</small>"""))
             return
         
@@ -145,105 +145,32 @@ class VarWatcher(object):
             for i, item in enumerate(self.data):
                 print(f"  {i}: {type(item)}: {item}")
 
-        response = prompt(self.data, f"""Given a section of code and some outputs, tell us if the code is doing a reasonable thing. 
-* First tell us what you think the code is doing.
-* Second, tell us what the outputs contain / represent.
-* Third, tell us where code and outputs don't align well.
-* Point out potential pitfalls and code improvements. Mention typos if you see them. If variable names are not descriptive or misleading, suggest better names. If equations are wrong, point this out.
-* Say ACTION REQUIRED if there is anything that needs to be done or ALL GOOD if everything is fine. Avoid additional text and formatting
+        temperature = 0.1
+        for _ in range(3): # attempts
+            response = prompt(self.data, self._raw_cell, temperature=temperature)
 
-## Example 1
+            while("\n " in response):
+                response = response.replace("\n ", "\n")
+            if "\n* " not in response:
+                response = response.replace("\n", "\n* ")
 
-Code:
-```python
-# Print numbers from 1 to 3
-for i in range(3):
-    print(i)
-```                                                                                              
+            try:
+                full_feedback = "* ".join(response.split("* "))
+                
+                if "ACTION REQUIRED" in response:
+                    headline = "🤓 unprompted feedback: " + response.split("* ")[-2].replace("\n", " ")
+                else:
+                    headline = "👍"
+                break
+            except:
+                full_feedback = response
+                headline = "🤔"
 
-Outputs:
-0
-1
-2
+                print(response)
 
-* The code prints the numbers from 0 to 2.
-* The output consists of the numbers 0, 1, and 2.
-* The comment in the code does neither fit to the code nor to the output.
-* To make the code do what's in the comment, the code should be changed to the range to range(1, 4).
-* ACTION REQUIRED
+                temperature += 0.2
+                print("Retrying...")
 
-## Example 2
-
-Code:
-```python
-my_list = ["banana", "apple", "cherry", "date"]
-
-# Sort alphabetically
-sorted_list = sorted(my_list)
-print(sorted_list)
-```
-
-Outputs:
-["apple", "banana", "cherry", "date"]
-
-* The code creates a list of fruits as strings, sorts them alphabetically and prints the sorted list out.
-* The output is an alphabetically sorted list of fruits.
-* Code and output fit well together.
-* The code looks great. I cannot suggest improvements.
-* ALL GOOD
-
-## Example 3
-
-Code:
-```python
-# write a variable as text file to disk
-with open("test.txt", "w") as f:
-    f.write("Hello, world!")
-print("File saved.")
-```
-
-Outputs:
-File saved.
-                                                       
-* The code writes static text as file to disk.
-* The output is a message that the file was saved.
-* The code does not write the variable to disk.
-* The code should be improved by creating a variable and writing the variable to disk.
-* ACTION REQUIRED
-
-## Example 4
-
-Code:
-```
-area = speed / distance
-print(area)
-```
-
-Outputs:
-5
-
-* The code computes area from speed and distance and prints out the result. The equation is wrong.
-* The output is a single number: 5
-* While code and output fit together, the equation in the code is misleading. Speed divided by distance is time and not area.
-* The variable `area` should be renamed to `time`.
-* ACTION REQUIRED             
-                         
-
-## Your task
-
-Code:
-```python
-{self._raw_cell}
-```
-
-Outputs: 
-""")
-        full_feedback = "* ".join(response.split("* "))
-        
-        if "ACTION REQUIRED" in response:
-            headline = "🤓 unprompted feedback: " + response.split("* ")[-2].replace("\n", " ")
-        else:
-            headline = "👍"
         display(Markdown(f"""<details><summary>{headline}</summary>
 {markdown_to_html(full_feedback)}
 </details>"""))
