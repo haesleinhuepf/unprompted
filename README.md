@@ -2,8 +2,11 @@
 
 A Jupyter notebook extension that provides AI-powered feedback on your code execution and outputs. It uses the [Gemma3:4b](https://ollama.com/library/gemma3:4b) model via [Ollama](https://ollama.com) to analyze your code and provide suggestions for improvements.
 
+![](docs/images/import.png)
 
-`unprompted` is a research tool intended to streamline data analysis experience by identifying issues in code early. Under the hood it uses large language models, which may do mistakes. Read and respect feedback carefully before following it.
+![](docs/images/teaser.png)
+
+`unprompted` is a research tool intended to streamline data analysis experience by identifying issues in code early. It is under development and certainly not perfect. Under the hood it uses large language models, which may do mistakes. Read and respect feedback carefully before following it.
 
 ## Prerequisites
 
