@@ -1,0 +1,20 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="unprompted",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[],
+    author="Robert Haase",
+    author_email="robert.haase@uni-leipzig.de",
+    description="unprompted is a AI-assistant helping you to write better code in Jupyter notebooks",
+    long_description="",
+    long_description_content_type="text/markdown",
+    url="https://github.com/haesleinhuepf/unprompted",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.9",
+) 
