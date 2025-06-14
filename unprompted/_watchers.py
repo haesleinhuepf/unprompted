@@ -108,7 +108,8 @@ class VarWatcher(object):
         from IPython.display import display, Markdown, HTML
         from ._utilities import markdown_to_html
         from ._llm import prompt
-        from unprompted import __version__, verbose
+        from unprompted import __version__, verbose, DEFAULT_MODEL
+        import os
 
         self.debug_print("POC")
         #print('result.execution_count = ', result.execution_count)
@@ -129,7 +130,8 @@ class VarWatcher(object):
         
         if self._raw_cell is None:
             # first execution
-            display(HTML(f"""<small>👋 Hi, I'm unprompted {__version__}. 
+            model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
+            display(HTML(f"""<small>👋 Hi, this is unprompted {__version__} and I use {model} under the hood. 
                          In the following code cells I will interpret your code, read its output, provide feedback and suggest improvements. 
                          If you want me to shut up, just comment out <code>import unprompted</code> and rerun the notebook.</small>"""))
             return
@@ -158,7 +160,10 @@ class VarWatcher(object):
                 full_feedback = "* ".join(response.split("* "))
                 
                 if "ACTION REQUIRED" in response:
-                    headline = "🤓 unprompted feedback: " + response.split("* ")[-2].replace("\n", " ")
+                    for a in response.split("* "):
+                        if "ACTION REQUIRED" in a:
+                            headline = "🤓 unprompted feedback: " + a.replace("ACTION REQUIRED:", "").replace("\n", " ").strip()
+                            break
                 else:
                     headline = "👍"
                 break
@@ -166,7 +171,7 @@ class VarWatcher(object):
                 full_feedback = response
                 headline = "🤔"
 
-                print(response)
+                #print(response)
 
                 temperature += 0.2
                 print("Retrying...")

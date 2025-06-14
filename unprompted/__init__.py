@@ -5,6 +5,7 @@ from IPython.core.display import DisplayObject
 from IPython.core.interactiveshell import InteractiveShell
 
 __version__ = "0.1.0"
+DEFAULT_MODEL = "gemma3:4b"
 
 verbose = False
 

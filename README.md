@@ -30,6 +30,7 @@ ollama pull gemma3:4b
 Models that also work (technically; quality wasn't measured yet)
 * [gemma3:4b](https://ollama.com/library/gemma3:4b) 
 * [gemma3:12b](https://ollama.com/library/gemma3:12b) 
+* [llama3.2-vision](https://ollama.com/library/llama3.2-vision)
 * [qwen2.5vl:7b](https://ollama.com/library/qwen2.5vl:7b)
 
 ## Usage
