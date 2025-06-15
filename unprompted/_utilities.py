@@ -78,32 +78,12 @@ def markdown_to_html(markdown_text):
     html = re.sub(r'_(.*?)_', r'<em>\1</em>', html)
     
     # Code (`code`)
+    html = re.sub(r'```(.*?)```', r'<code>\1</code>', html)
     html = re.sub(r'`(.*?)`', r'<code>\1</code>', html)
     
     # Links [text](url)
     html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
-    
-    # Handle paragraphs (but avoid wrapping list tags and headers)
-    lines = html.split('\n')
-    result_lines = []
-    
-    for line in lines:
-        stripped = line.strip()
-        # Don't wrap list tags, headers, or empty lines in paragraph tags
-        if (stripped and 
-            not stripped.startswith('<ul>') and 
-            not stripped.startswith('</ul>') and
-            not stripped.startswith('<ol>') and 
-            not stripped.startswith('</ol>') and
-            not stripped.startswith('<li>') and
-            not stripped.startswith('<h') and
-            not re.match(r'^</h[1-6]>$', stripped)):
-            result_lines.append(f'<p>{stripped}</p>')
-        else:
-            result_lines.append(line)
-    
-    html = '\n'.join(result_lines)
-    
+        
     # Clean up empty paragraphs and extra whitespace
     html = re.sub(r'<p></p>', '', html)
     html = re.sub(r'\n+', '\n', html)

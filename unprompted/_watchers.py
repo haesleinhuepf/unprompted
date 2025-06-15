@@ -131,9 +131,10 @@ class VarWatcher(object):
         if self._raw_cell is None:
             # first execution
             model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
-            display(HTML(f"""<small>👋 Hi, this is unprompted {__version__} and I use {model} under the hood. 
-                         In the following code cells I will interpret your code, read its output, provide feedback and suggest improvements. 
-                         If you want me to shut up, just comment out <code>import unprompted</code> and rerun the notebook.</small>"""))
+            display(HTML(f"""<small>👋 Hi, this is <a href="https://github.com/haesleinhuepf/unprompted" target="_blank"><i>umprompted</i></a> {__version__} using {model} under the hood. 
+                         Following code cells code and related output will be interpreted by AI to provide feedback and suggest improvements. 
+                         If you want to keep code and/or its output private, do not use this tool or configure it to use a local LLM. Check the documentation for details.
+                         Also <i>umprompted</i> does mistakes. Treat its suggestions carefully.</small>"""))
             return
         
         if self._raw_cell.startswith("%bob") or self._raw_cell.startswith("%%bob"):
@@ -151,19 +152,11 @@ class VarWatcher(object):
         for _ in range(3): # attempts
             response = prompt(self.data, self._raw_cell, temperature=temperature)
 
-            while("\n " in response):
-                response = response.replace("\n ", "\n")
-            if "\n* " not in response:
-                response = response.replace("\n", "\n* ")
-
             try:
                 full_feedback = "* ".join(response.split("* "))
                 
                 if "ACTION REQUIRED" in response:
-                    for a in response.split("* "):
-                        if "ACTION REQUIRED" in a:
-                            headline = "🤓 unprompted feedback: " + a.replace("ACTION REQUIRED:", "").replace("\n", " ").strip()
-                            break
+                    headline = "🤓 unprompted feedback: " + response.split("ACTION REQUIRED")[1].strip(":").strip()
                 else:
                     headline = "👍"
                 break
@@ -176,6 +169,7 @@ class VarWatcher(object):
                 temperature += 0.2
                 print("Retrying...")
 
-        display(Markdown(f"""<details><summary>{headline}</summary>
+        display(Markdown(f"""<details><summary>{markdown_to_html(headline).replace("\n", " ").strip()}</summary>
 {markdown_to_html(full_feedback)}
 </details>"""))
+        

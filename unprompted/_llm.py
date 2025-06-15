@@ -69,7 +69,7 @@ def make_demo_fig_and_code():
 
     return b64_figure, code
 
-def prompt(list_of_objects: List[Any], code: str, ollama_url="http://localhost:11434/v1", temperature=0.0) -> str:
+def prompt(list_of_objects: List[Any], code: str, temperature=0.0) -> str:
     """
     Sends a combined text and image prompt to a locally running Gemma model via Ollama.
 
@@ -81,11 +81,18 @@ def prompt(list_of_objects: List[Any], code: str, ollama_url="http://localhost:1
     Returns:
         str: LLM response.
     """
-    from unprompted import DEFAULT_MODEL
+    from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
+
+    llm_url = os.getenv("UNPROMPTED_LLM_URL", DEFAULT_LLM_URL)
+    if len(llm_url) == 0:
+        llm_url = None
+    api_key = os.getenv("UNPROMPTED_API_KEY", DEFAULT_API_KEY)
+    if len(api_key) == 0:
+        api_key = None
 
     client = OpenAI(
-        base_url=ollama_url,
-        api_key="ollama"  # dummy value for local use
+        base_url=llm_url,
+        api_key=api_key
     )
 
     # use the model stored in the environment variable UNPROMPTED_MODEL
@@ -141,10 +148,13 @@ Given a section of code and some outputs, your job is to review the code careful
 Your feedback should be very detailed and include:
 * First, tell us what you think the code is doing. Mention all potential issues in the code such as wrong equations, misleading variable names, incorrect comments, etc.
 * Check equations VERY carefully if they are physically correct.
+* If there is an error message, explain what it means and how to fix it.
 * Second, tell us what the outputs contain / represent and the relation to the given code. Explain images and figures in very detail.
 * Third, tell us where code and outputs don't align well, or where the code is misleading. Also point out if the code is not doing what is written in its comments, and explain what is different, missing, or misleading.
 * Point out potential pitfalls and code improvements. Mention typos if you see them. If variable names are not descriptive or misleading, suggest better names. If equations are wrong, point this out.
-* In the last bullet point say ACTION REQUIRED if there is anything that needs to be done or ALL GOOD if everything is fine.
+* In the last bullet point say ALL GOOD if there is nothing that could be improved. Write ACTION REQUIRED if there is anything that needs to be done and explain what needs to be done. Write this explanation in a single line behind ACTION REQUIRED
+
+Keep your response as short and concise as demonstrated in the given examples.
 """}, {
             "role": "user",
             "content": [
