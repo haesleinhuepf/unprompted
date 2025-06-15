@@ -132,7 +132,7 @@ class VarWatcher(object):
             # first execution
             model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
             display(HTML(f"""<small>👋 Hi, this is <a href="https://github.com/haesleinhuepf/unprompted" target="_blank"><i>umprompted</i></a> {__version__} using {model} under the hood. 
-                         Following code cells code and related output will be interpreted by AI to provide feedback and suggest improvements. 
+                         Following code cells and related output will be interpreted by AI to provide feedback and suggest improvements. 
                          If you want to keep code and/or its output private, do not use this tool or configure it to use a local LLM. Check the documentation for details.
                          Also <i>umprompted</i> does mistakes. Treat its suggestions carefully.</small>"""))
             return
