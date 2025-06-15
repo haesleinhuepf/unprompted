@@ -2,7 +2,7 @@
 
 A Jupyter notebook extension that provides AI-powered feedback on your code execution and outputs. Per defaut, it uses the [gpt-4.1-nano](https://platform.openai.com/docs/models/gpt-4.1-nano) to analyze your code and provide suggestions for improvements.
 
-![](docs/images/teaser.gif)
+![](https://github.com/haesleinhuepf/unprompted/raw/main/docs/images/teaser.gif)
 
 
 
@@ -45,9 +45,9 @@ Models that also work technically. Quality wasn't measured yet.
 
 ## Usage
 
-In your Jupyter notebook, import the extension [full example](docs/demo.ipynb):
+In your Jupyter notebook, import the extension [full example](https://github.com/haesleinhuepf/unprompted/blob/main/docs/demo.ipynb):
 ```python
 import unprompted
 ```
 
-If you want to use ollama, configure the environment variables `UNPROMPTED_MODEL`, `UNPROMPTED_LLM_URL` and `UNPROMPTED_API_KEY in case of a remote server. Check out the corresponding [example notebook](docs/other_providers.ipynb) for details.
+If you want to use ollama, configure the environment variables `UNPROMPTED_MODEL`, `UNPROMPTED_LLM_URL` and `UNPROMPTED_API_KEY in case of a remote server. Check out the corresponding [example notebook](https://github.com/haesleinhuepf/unprompted/blob/main/docs/other_providers.ipynb) for details.
