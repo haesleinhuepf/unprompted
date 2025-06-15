@@ -7,7 +7,7 @@ A Jupyter notebook extension that provides AI-powered feedback on your code exec
 
 
 > [!CAUTION]
-> `unprompted` is a research tool intended to streamline data analysis experience by identifying issues in code early. It is under development and certainly not perfect. Under the hood it uses large language models, which may do mistakes. Read and respect feedback carefully before following it.
+> `unprompted` is a research tool intended to streamline data analysis experience by identifying issues in code early. It is under development and certainly not perfect. Under the hood it uses large language models, which may do mistakes. Read feedback carefully and critically before following it.
 >
 > When using the OpenAI, Github Models or any other LLM service provider with unprompted, you are bound to the terms of service 
 > of the respective companies or organizations.
