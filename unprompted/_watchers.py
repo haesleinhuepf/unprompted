@@ -169,7 +169,8 @@ class VarWatcher(object):
                 temperature += 0.2
                 print("Retrying...")
 
-        display(Markdown(f"""<details><summary>{markdown_to_html(headline).replace("\n", " ").strip()}</summary>
+        text = markdown_to_html(headline).replace("\n", " ").strip()
+        display(Markdown(f"""<details><summary>{text}</summary>
 {markdown_to_html(full_feedback)}
 </details>"""))
         
