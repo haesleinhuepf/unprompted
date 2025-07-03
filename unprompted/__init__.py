@@ -4,7 +4,7 @@ from IPython.display import display
 from IPython.core.display import DisplayObject
 from IPython.core.interactiveshell import InteractiveShell
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 DEFAULT_MODEL = "gpt-4.1-nano"
 DEFAULT_LLM_URL = ""
 DEFAULT_API_KEY = ""
