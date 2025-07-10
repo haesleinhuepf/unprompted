@@ -107,9 +107,10 @@ class VarWatcher(object):
     def post_run_cell(self, result):
         from IPython.display import display, Markdown, HTML
         from ._utilities import markdown_to_html
-        from ._llm import prompt
+        from ._llm import prompt_with_code_and_results
         from unprompted import __version__, verbose, DEFAULT_MODEL
         import os
+        from ._chat_gui import chat_gui
 
         self.debug_print("POC")
         #print('result.execution_count = ', result.execution_count)
@@ -150,7 +151,7 @@ class VarWatcher(object):
 
         temperature = 0.1
         for _ in range(3): # attempts
-            response = prompt(self.data, self._raw_cell, temperature=temperature)
+            response, text_prompt = prompt_with_code_and_results(self.data, self._raw_cell, temperature=temperature)
 
             try:
                 full_feedback = "* ".join(response.split("* "))
@@ -174,3 +175,7 @@ class VarWatcher(object):
 {markdown_to_html(full_feedback)}
 </details>"""))
         
+        # keep the code in the output in history
+        history = [text_prompt, response]
+
+        chat_gui(history)

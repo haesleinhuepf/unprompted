@@ -69,17 +69,18 @@ def make_demo_fig_and_code():
 
     return b64_figure, code
 
-def prompt(list_of_objects: List[Any], code: str, temperature=0.0) -> str:
+def prompt_with_code_and_results(list_of_objects: List[Any], code: str, temperature=0.0) -> str:
     """
     Sends a combined text and image prompt to a locally running Gemma model via Ollama.
 
     Args:
         list_of_objects: A list of arbitrary objects, some of which may be matplotlib Figures.
-        text_prompt: Instruction or query string.
+        code: The code to be reviewed.
         ollama_url: Base URL of the local Ollama server.
 
     Returns:
         str: LLM response.
+        str: The text prompt that was used.
     """
     from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
 
@@ -148,6 +149,7 @@ Given a section of code and some outputs, your job is to review the code careful
 Your feedback should be very detailed and include:
 * First, tell us what you think the code is doing. Mention all potential issues in the code such as wrong equations, misleading variable names, incorrect comments, etc.
 * Check equations VERY carefully if they are physically correct.
+* When statistical tests are performed, check if corresponding pre-conditions are met.
 * If there is an error message, explain what it means and how to fix it.
 * Second, tell us what the outputs contain / represent and the relation to the given code. Explain images and figures in very detail.
 * Third, tell us where code and outputs don't align well, or where the code is misleading. Also point out if the code is not doing what is written in its comments, and explain what is different, missing, or misleading.
@@ -244,18 +246,20 @@ Hello, world!
 * ALL GOOD
 """}]
     
-    messages = messages + image_example + [
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": f"""Code:
+    text_prompt = f"""Code:
 ```python
 {code}
 ```
 
 Outputs: 
 {outputs}
-"""},
+"""
+
+    messages = messages + image_example + [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": text_prompt},
                 *image_messages
             ]
         }
@@ -264,6 +268,41 @@ Outputs:
     #print(messages)
 
     # Send the chat completion request
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature
+    )
+
+    return response.choices[0].message.content.strip(), text_prompt
+
+
+def prompt_with_history(history: List[str], temperature=0.0) -> str:
+    from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
+
+    llm_url = os.getenv("UNPROMPTED_LLM_URL", DEFAULT_LLM_URL)
+    if len(llm_url) == 0:
+        llm_url = None
+    api_key = os.getenv("UNPROMPTED_API_KEY", DEFAULT_API_KEY)
+    if len(api_key) == 0:
+        api_key = None
+
+    client = OpenAI(
+        base_url=llm_url,
+        api_key=api_key
+    )
+
+    model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
+
+    messages = []
+    for i, h in enumerate(history):
+        messages.append({
+            "role": "user" if i % 2 == 0 else "assistant",
+            "content": [
+                {"type": "text", "text": h}
+            ]
+        })
+    
     response = client.chat.completions.create(
         model=model,
         messages=messages,
