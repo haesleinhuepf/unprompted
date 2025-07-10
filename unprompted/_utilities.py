@@ -89,3 +89,35 @@ def markdown_to_html(markdown_text):
     html = re.sub(r'\n+', '\n', html)
     
     return html.strip()
+
+
+def create_reusable_variables_block():
+    """Creates a block of text that explains which variables, functions and libraries are
+    available to be used."""
+    variables = []
+    functions = []
+    modules = []
+    import types
+    from IPython import get_ipython
+
+    # figure out which variables are not private
+    for key, value in get_ipython().user_ns.items():
+        if key.startswith("_"):
+            continue
+        if callable(value):
+            if key not in ["quit", "exit", "get_ipython", "open", "bob"]:
+                functions.append(key)
+            continue
+        if isinstance(value, types.ModuleType):
+            if key != "bia_bob":
+                modules.append(key)
+            continue
+        if key in ["In", "Out"]:
+            continue
+        variables.append(key)
+
+    return f"""
+    The following variables are defined: {",".join([str(v) + "(" + str(type(v)) + ")" for v in variables])}    
+    The following functions are defined: {",".join([str(f) for f in functions])}    
+    The following modules or aliases are imported: {",".join([str(m) for m in modules])}
+    """
