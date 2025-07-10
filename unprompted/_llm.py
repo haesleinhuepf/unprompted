@@ -82,6 +82,7 @@ def prompt(list_of_objects: List[Any], code: str, temperature=0.0) -> str:
         str: LLM response.
     """
     from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
+    from ._utilities import create_reusable_variables_block
 
     llm_url = os.getenv("UNPROMPTED_LLM_URL", DEFAULT_LLM_URL)
     if len(llm_url) == 0:
@@ -139,20 +140,26 @@ Outputs:
     # Combine text parts into one message
     outputs = "\n".join(text_parts)
 
+    reusable_variables_block = create_reusable_variables_block()
+
     # Compose the full message payload
     messages = [
         {
             "role": "system",
-            "content": """You are an excellent data scientist, statistician and python programmer. You also know physics and mathematics. You are very critical and will not accept any wrong equations, misleading variable names, incorrect comments, etc.
+            "content": f"""You are an excellent data scientist, statistician and python programmer. You also know physics and mathematics. You are very critical and will not accept any wrong equations, misleading variable names, incorrect comments, etc.
 Given a section of code and some outputs, your job is to review the code carefully and provide constructive feedback to improve the code.
 Your feedback should be very detailed and include:
 * First, tell us what you think the code is doing. Mention all potential issues in the code such as wrong equations, misleading variable names, incorrect comments, etc.
 * Check equations VERY carefully if they are physically correct.
+* Watch out for undefined variables. Recommend to define them if they are not defined.
 * If there is an error message, explain what it means and how to fix it.
 * Second, tell us what the outputs contain / represent and the relation to the given code. Explain images and figures in very detail.
 * Third, tell us where code and outputs don't align well, or where the code is misleading. Also point out if the code is not doing what is written in its comments, and explain what is different, missing, or misleading.
 * Point out potential pitfalls and code improvements. Mention typos if you see them. If variable names are not descriptive or misleading, suggest better names. If equations are wrong, point this out.
 * In the last bullet point say ALL GOOD if there is nothing that could be improved. Write ACTION REQUIRED if there is anything that needs to be done and explain what needs to be done. Write this explanation in a single line behind ACTION REQUIRED
+
+There are some variables, functions and modules that are available to be used. NEVER complain that these need to be defined, because they are already defined.
+{reusable_variables_block}
 
 Keep your response as short and concise as demonstrated in the given examples.
 """}, {
@@ -175,6 +182,7 @@ Outputs:
             "role": "assistant",
             "content": """* The code prints the numbers from 0 to 2.
 * The output consists of the numbers 0, 1, and 2, as instructed in the code.
+* The variable `i` is defined.
 * The comment in the code does neither fit to the code nor to the output.
 * ACTION REQUIRED: To make the code do what's in the comment, the code should be changed to the range to range(1, 4).
 """
@@ -199,6 +207,7 @@ Outputs:
             "content": """* The code creates a list of fruits as strings, sorts them alphabetically and prints the sorted list out.
 * The output is an alphabetically sorted list of fruits as instructed in the code.
 * Code and output fit well together.
+* The variables `my_list` and `sorted_list` are defined.
 * The code looks great. I cannot suggest improvements.
 * ALL GOOD
 """},
@@ -219,7 +228,8 @@ Outputs:
             "content": """* The code computes area from speed and distance and prints out the result. The equation is wrong.
 * The output is a single number: 5, presumably the result of the wrong equation.
 * While code and output fit together, the equation in the code is misleading. Speed divided by distance is time and not area.
-* ACTION REQUIRED: The variable `area` should be renamed to `time`.
+* The variables `distance` and `speed` are not defined.
+* ACTION REQUIRED: The variable `area` should be renamed to `time`. Make sure to define the variables `distance` and `speed`.
 """},
         {
             "role": "user",
@@ -240,9 +250,35 @@ Hello, world!
             "content": """* The code loads a text file from disk and prints out the content.
 * The output is the content of the text file as instructed in the code.
 * Code and output fit well together.
+* The variables `text` and `f` are defined.
 * The code looks great. I cannot suggest improvements.
 * ALL GOOD
-"""}]
+"""},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": """Code:
+```python
+import datetime
+hour = datetime.datetime.now().hour
+if hour > 12:
+    print(hullahupp)
+else:
+    print("Good morning!")
+```
+
+Outputs:
+Good morning!
+"""}]},
+        {
+            "role": "assistant",
+            "content": """* The code prints out the content of the variable `hullahupp` if it's in the afternoon and "".
+* The output is "Good morning!" as instructed in the code.
+* Code and output fit well together.
+* The variable `hour` is defined. The variable `hullahupp` is not defined.
+* ACTION REQUIRED: Define the variable `hullahupp`.
+"""},
+]
     
     messages = messages + image_example + [
         {
