@@ -271,3 +271,73 @@ Outputs:
     )
 
     return response.choices[0].message.content.strip()
+
+def prompt_figure(figure: matplotlib.figure.Figure, prompt="Describe the figure in detail.", temperature=0.0) -> str:
+    from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
+    llm_url = os.getenv("UNPROMPTED_LLM_URL", DEFAULT_LLM_URL)
+    if len(llm_url) == 0:
+        llm_url = None
+    api_key = os.getenv("UNPROMPTED_API_KEY", DEFAULT_API_KEY)
+    if len(api_key) == 0:
+        api_key = None
+    
+    client = OpenAI(
+        base_url=llm_url,
+        api_key=api_key
+    )
+    model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
+
+    messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": fig_to_base64(figure)}}
+                ]
+            }
+        ]
+
+    
+    # Send the chat completion request
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature
+    )
+
+    return response.choices[0].message.content.strip()
+
+
+def prompt_text(prompt="Describe the figure in detail.", temperature=0.0) -> str:
+    from unprompted import DEFAULT_MODEL, DEFAULT_API_KEY, DEFAULT_LLM_URL
+    llm_url = os.getenv("UNPROMPTED_LLM_URL", DEFAULT_LLM_URL)
+    if len(llm_url) == 0:
+        llm_url = None
+    api_key = os.getenv("UNPROMPTED_API_KEY", DEFAULT_API_KEY)
+    if len(api_key) == 0:
+        api_key = None
+    
+    client = OpenAI(
+        base_url=llm_url,
+        api_key=api_key
+    )
+    model = os.getenv("UNPROMPTED_MODEL", DEFAULT_MODEL)
+
+    messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                ]
+            }
+        ]
+
+    
+    # Send the chat completion request
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature
+    )
+
+    return response.choices[0].message.content.strip()

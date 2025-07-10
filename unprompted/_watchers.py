@@ -4,16 +4,23 @@ import io
 class CapturingStream:
     """A file-like object that captures writes while passing them through to original stream"""
     
-    def __init__(self, original_stream, data_collection):
+    def __init__(self, original_stream, data_collection, original_display):
         self.original_stream = original_stream
         self.captured_data = data_collection
+        self.original_display = original_display
         
     def write(self, data):
+        from unprompted import INSTANT_FEEDBACK
         # Capture the data
         if data and data != "\n":  # Only capture non-empty writes
             self.captured_data.append(data)
+
+        result = self.original_stream.write(data)
+        if INSTANT_FEEDBACK:
+            instant_feedback(data, self.original_display)
+
         # Pass through to original stream
-        return self.original_stream.write(data)
+        return result
     
     def flush(self):
         return self.original_stream.flush()
@@ -37,14 +44,15 @@ class VarWatcher(object):
         self.debug_print("PRE")
         self.last_x = self.shell.user_ns.get('x', None)
         self.data = []
-        
-        # Set up stdout/stderr capture with pass-through
-        self.stdout_capturer = CapturingStream(sys.stdout, self.data)
-        self.stderr_capturer = CapturingStream(sys.stderr, self.data)
-        self.display_outputs = []
-        
+
         # Hook into display function
         self._setup_display_hook()
+
+
+        # Set up stdout/stderr capture with pass-through
+        self.stdout_capturer = CapturingStream(sys.stdout, self.data, self.original_display)
+        self.stderr_capturer = CapturingStream(sys.stderr, self.data, self.original_display)
+        self.display_outputs = []
         
         # Replace stdout/stderr with capturing versions
         sys.stdout = self.stdout_capturer
@@ -58,12 +66,19 @@ class VarWatcher(object):
             self.original_display = original_display
             
         def display_hook(*args, **kwargs):
+            from unprompted import INSTANT_FEEDBACK
+            
             # Capture what's being displayed
             for arg in args:
                 self.data.append(arg)
-            
+
             # Call original display function (so it still shows to user)
-            return self.original_display(*args, **kwargs)
+            result =  self.original_display(*args, **kwargs)
+            if INSTANT_FEEDBACK:
+                for arg in args:
+                    instant_feedback(arg, self.original_display)
+
+            return result
         
         # Replace display function in the user namespace and IPython.display
         self.shell.user_ns['display'] = display_hook
@@ -174,3 +189,26 @@ class VarWatcher(object):
 {markdown_to_html(full_feedback)}
 </details>"""))
         
+def instant_feedback(arg, display_func):
+    from IPython.display import display, HTML, Markdown
+    import matplotlib
+    from ._utilities import markdown_to_html
+    from ._llm import prompt_text, prompt_figure
+    import html
+
+    
+    if isinstance(arg, str):
+        if len(str(arg)) < 100:
+            return
+        feedback = markdown_to_html(prompt_text(f"Summarize the following text to a short sentence and respond with a single line: {arg}"))
+        headline = "🤓"
+    elif isinstance(arg, matplotlib.figure.Figure):
+        feedback = markdown_to_html(prompt_figure(arg))
+        headline = "🤩"
+    else:
+        feedback = html.escape(str(type(arg)))
+        headline = "🤔"
+
+    display_func(Markdown(f"""<div align="right" width="100%"><details><summary>{headline}</summary>
+{feedback}
+</details></div>"""))

@@ -9,6 +9,8 @@ DEFAULT_MODEL = "gpt-4.1-nano"
 DEFAULT_LLM_URL = ""
 DEFAULT_API_KEY = ""
 
+INSTANT_FEEDBACK = False
+
 verbose = False
 
 
